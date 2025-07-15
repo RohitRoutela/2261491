@@ -1,38 +1,17 @@
-// logMiddleware.js
+const fetch = require("node-fetch");
 
-const https = require("https");
+let token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJNYXBDbGFpbXMiOnsiYXVkIjoiaHR0cDovLzIwLjI0NC41Ni4xNDQvZXZhbHVhdGlvbi1zZXJ2aWNlIiwiZW1haWwiOiJyb2hpdHJvdXRlbGEyMjAxMTI0MjdAZ2VodS5hYy5pbiIsImV4cCI6MTc1MjU2MjA3NCwiaWF0IjoxNzUyNTYxMTc0LCJpc3MiOiJBZmZvcmQgTWVkaWNhbCBUZWNobm9sb2dpZXMgUHJpdmF0ZSBMaW1pdGVkIiwianRpIjoiM2QwMWE0OWYtMGY4ZS00N2QwLWI1M2YtNGVhYTU4MDMwM2MyIiwibG9jYWxlIjoiZW4tSU4iLCJuYW1lIjoicm9oaXQgcm91dGVsYSIsInN1YiI6IjRiNDRiYWM5LTcwMDAtNDExNi1hOTU5LTg2MWM5OWE5YzVkZSJ9LCJlbWFpbCI6InJvaGl0cm91dGVsYTIyMDExMjQyN0BnZWh1LmFjLmluIiwibmFtZSI6InJvaGl0IHJvdXRlbGEiLCJyb2xsTm8iOiIyMjYxNDkxIiwiYWNjZXNzQ29kZSI6IlFBaERVciIsImNsaWVudElEIjoiNGI0NGJhYzktNzAwMC00MTE2LWE5NTktODYxYzk5YTljNWRlIiwiY2xpZW50U2VjcmV0IjoiYVpDTndBY1pCZ3FIcmpiWSJ9.T42EZiNhcVTnQw_4wZzoeGgIUzo_xkMVg3n6LRvFxw8"; // to store the Bearer token
 
-// ✅ Node 18+ includes fetch natively.
-// If you're on Node <18, uncomment the next line:
-// const fetch = require("node-fetch");
-
-let token = ""; // 🔐 Set this using setToken()
-
-/**
- * Sets the Bearer Token to be used in API requests
- */
 function setToken(bearerToken) {
   token = bearerToken;
 }
 
-/**
- * Sends a log to the AffordMed logging server
- * @param {string} stack - "frontend" or "backend"
- * @param {string} level - "debug", "info", "warn", "error", or "fatal"
- * @param {string} packageName - "controller", "handler", "middleware", etc.
- * @param {string} message - Log message
- */
 async function Log(stack, level, packageName, message) {
-  if (!token) {
-    console.error("❌ Error: Bearer token not set. Use setToken() before logging.");
-    return;
-  }
-
   const payload = {
     stack: stack.toLowerCase(),
     level: level.toLowerCase(),
     package: packageName.toLowerCase(),
-    message: message
+    message,
   };
 
   try {
@@ -40,22 +19,16 @@ async function Log(stack, level, packageName, message) {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "Authorization": `Bearer ${token}`
+        "Authorization": `Bearer ${token}`, // ✅ CORRECT
       },
-      body: JSON.stringify(payload)
+      body: JSON.stringify(payload),
     });
 
-    const result = await response.json();
-
-    if (!response.ok) {
-      console.error("❌ Failed to send log:", result);
-    } else {
-      console.log("✅ Log sent:", result);
-    }
-
+    const data = await response.json();
+    console.log("Response from server:", data);
   } catch (error) {
-    console.error("❌ Log Error:", error.message);
+    console.error("Log Error:", error.message);
   }
 }
 
-module.exports = { Log, setToken };
+module.exports = { Log, setToken }; // ✅ EXPORT BOTH
